@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { imageId: string } }
+  { params }: { params: Promise<{ imageId: string }> }
 ) {
   try {
-    const { imageId } = params;
+    const { imageId: _ } = await params;
     
     // 画像IDから実際のDify URLを取得（データベースやキャッシュから）
     // この例では、URLパラメータから取得
