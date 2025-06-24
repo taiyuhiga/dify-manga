@@ -1,0 +1,1147 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: workflow
+  name: 漫画でわかるAI
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai_tool:0.0.1@be3525b5ffd6f7f7be58a048912edb7822c8835caac366ab164d804459ae76eb
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/gemini:0.2.1@88c1b2c816ef2ea36fc411b35298a621b3260d34bc08bd9357772092728aadde
+kind: app
+version: 0.3.0
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1746700539145-source-1746700545903-target
+      selected: false
+      source: '1746700539145'
+      sourceHandle: source
+      target: '1746700545903'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1746707845164'
+        sourceType: iteration-start
+        targetType: llm
+      id: 1746707845164start-source-1746707871960-target
+      selected: false
+      source: 1746707845164start
+      sourceHandle: source
+      target: '1746707871960'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: code
+      id: 1746700545903-source-1746708458829-target
+      selected: false
+      source: '1746700545903'
+      sourceHandle: source
+      target: '1746708458829'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: iteration
+      id: 1746708458829-source-1746707845164-target
+      selected: false
+      source: '1746708458829'
+      sourceHandle: source
+      target: '1746707845164'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: iteration
+        targetType: code
+      id: 1746707845164-source-1746788803036-target
+      selected: false
+      source: '1746707845164'
+      sourceHandle: source
+      target: '1746788803036'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: iteration
+      id: 1746788803036-source-1747134201151-target
+      source: '1746788803036'
+      sourceHandle: source
+      target: '1747134201151'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: iteration
+        targetType: end
+      id: 1747134201151-source-1746701222868-target
+      source: '1747134201151'
+      sourceHandle: source
+      target: '1746701222868'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1747134201151'
+        sourceType: iteration-start
+        targetType: tool
+      id: 1747134201151start-source-1747134234498-target
+      source: 1747134201151start
+      sourceHandle: source
+      target: '1747134234498'
+      targetHandle: target
+      type: custom
+      zIndex: 1002
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 開始
+        type: start
+        variables:
+        - label: user_question
+          max_length: 48
+          options: []
+          required: true
+          type: text-input
+          variable: user_question
+        - label: user_level
+          max_length: 48
+          options: []
+          required: true
+          type: text-input
+          variable: user_level
+      height: 116
+      id: '1746700539145'
+      position:
+        x: 80
+        y: 280.21763115836654
+      positionAbsolute:
+        x: 80
+        y: 280.21763115836654
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1746700539145'
+          - user_question
+        desc: ''
+        model:
+          completion_params: {}
+          mode: chat
+          name: gemini-2.5-pro-preview-05-06
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: 370abf98-3b13-460e-8444-9160980d27c7
+          role: system
+          text: "prompt_template:\n- id: 370abf98-3b13-460e-8444-9160980d27c7\n  role:\
+            \ system\n  text: |\n    あなたは教育漫画のプランナーです。\n    今回のテーマはユーザーの質問「{{#1746700539145.user_question#}}」です。\n\
+            \    このテーマについて、ユーザーレベル「{{#1746700539145.user_level#}}」の人が理解できるように、ステップバイステップで説明する漫画の構成を以下のJSON形式で計画してください。\n\
+            \n    重要な指示:\n    - ユーザーレベルに応じて、基礎から応用まで段階的に理解できるような構成にしてください\n    - キャラクターの外見は非常に詳細に記述し、一貫性を保つために必要な全ての特徴を含めてください\n\
+            \    - ストーリーは連続性を持ち、前のコマの内容を踏まえて次のコマが展開するようにしてください\n\n    出力JSON形式:\n\
+            \    {\n      \"total_panels\": (コマの総数、整数、最低20コマ以上、複雑なテーマなら50-100コマ),\n\
+            \      \"panel_overviews\": [\n        \"第1話：導入 - キャラクター紹介と{{#1746700539145.user_question#}}への疑問提起\"\
+            ,\n        \"第2話：基礎知識 - {{#1746700539145.user_question#}}の背景や必要性の説明\"\
+            ,\n        \"第3話：詳細説明 - {{#1746700539145.user_question#}}の具体的な内容\",\n\
+            \        // ... 段階的に理解を深める構成で、必ずストーリーの連続性を持たせる\n      ],\n      \"main_characters\"\
+            : [\n        {\n          \"name\": \"知識先生\",\n          \"species\":\
+            \ \"human\",\n          \"age\": \"35歳\",\n          \"gender\": \"male\"\
+            ,\n          \"hair_color\": \"dark brown\",\n          \"hair_style\"\
+            : \"short neat side-parted hair\",\n          \"eye_color\": \"deep blue\"\
+            ,\n          \"face_shape\": \"oval face with gentle features\",\n   \
+            \       \"skin_tone\": \"fair skin\",\n          \"height\": \"175cm tall\"\
+            ,\n          \"body_type\": \"average build\",\n          \"clothing\"\
+            : \"white lab coat over blue shirt and dark trousers\",\n          \"\
+            accessories\": \"round glasses with thin silver frames\",\n          \"\
+            distinctive_features\": {\n            \"facial_features\": \"small mole\
+            \ on left cheek, friendly smile lines around eyes\",\n            \"voice\"\
+            : \"calm and patient tone\",\n            \"mannerisms\": \"often adjusts\
+            \ glasses when explaining\"\n          },\n          \"personality\":\
+            \ \"patient, knowledgeable, encouraging\",\n          \"role\": \"{{#1746700539145.user_question#}}について詳しく解説する教師役\"\
+            \n        },\n        {\n          \"name\": \"学び君\",\n          \"species\"\
+            : \"human\", \n          \"age\": \"{{#1746700539145.user_level#}}相当\"\
+            ,\n          \"gender\": \"male\",\n          \"hair_color\": \"black\"\
+            ,\n          \"hair_style\": \"medium length slightly messy hair with\
+            \ bangs\",\n          \"eye_color\": \"bright brown\",\n          \"face_shape\"\
+            : \"round youthful face\",\n          \"skin_tone\": \"light skin\",\n\
+            \          \"height\": \"appropriate for age\",\n          \"body_type\"\
+            : \"slim build\",\n          \"clothing\": \"school uniform with white\
+            \ shirt and navy blue blazer\",\n          \"accessories\": \"red necktie,\
+            \ small backpack\",\n          \"distinctive_features\": {\n         \
+            \   \"facial_features\": \"large expressive eyes, small nose, energetic\
+            \ expression\",\n            \"voice\": \"curious and enthusiastic\",\n\
+            \            \"mannerisms\": \"tilts head when confused, eyes sparkle\
+            \ when understanding\"\n          },\n          \"personality\": \"curious,\
+            \ eager to learn, sometimes struggles but perseveres\",\n          \"\
+            role\": \"{{#1746700539145.user_question#}}について学ぶ生徒役\"\n        }\n  \
+            \    ],\n      \"visual_consistency_rules\": {\n        \"art_style\"\
+            : \"clear manga style with consistent line weights\",\n        \"color_palette\"\
+            : \"bright educational colors with consistent character colors\",\n  \
+            \      \"panel_layout\": \"2-4 panels per page for easy reading\",\n \
+            \       \"background_style\": \"simple but informative backgrounds that\
+            \ support the lesson\"\n      },\n      \"story_arc\": {\n        \"introduction\"\
+            : \"panels 1-5: character introduction and problem setup\",\n        \"\
+            development\": \"panels 6-40: step-by-step explanation with examples\"\
+            ,\n        \"climax\": \"panels 41-45: challenging application or test\"\
+            ,\n        \"resolution\": \"panels 46-50: summary and mastery celebration\"\
+            \n      },\n      \"educational_progression\": [\n        \"基礎概念の導入\"\
+            ,\n        \"具体例での説明\", \n        \"段階的な詳細化\",\n        \"応用と発展\",\n \
+            \       \"まとめと確認\"\n      ]\n    }\n\n    指示:\n    - `total_panels` は最低20コマ、理想的には50-100コマで、トピックの複雑さに応じて調整\n\
+            \    - キャラクターの特徴は画像生成AIが一貫した外見を生成できるよう、極めて詳細に記述\n    - 各`panel_overview`は前のパネルからの流れを意識し、ストーリーとして成立するように\n\
+            \    - ユーザーレベルに応じた語彙と説明の深さを調整\n\n出力は上記スキーマに完全準拠した **純粋 JSON** だけを返してください。前後の文章やコードブロックは不要です。"
+        - id: efc68e32-71e6-4874-bb23-b928629b234f
+          role: user
+          text: '質問:{{#1746700539145.user_question#}}
+
+            ユーザーレベル: {{#1746700539145.user_level#}}'
+        selected: false
+        structured_output:
+          schema:
+            properties:
+              educational_progression:
+                items:
+                  type: string
+                type: array
+              main_characters:
+                items:
+                  properties:
+                    name:
+                      type: string
+                  required:
+                  - name
+                  type: object
+                type: array
+              overall_style_suggestion:
+                type: string
+              panel_overviews:
+                items:
+                  type: string
+                type: array
+              story_arc:
+                properties:
+                  phase_overview:
+                    type: string
+                required:
+                - phase_overview
+                type: object
+              total_panels:
+                minimum: 20
+                type: integer
+              visual_consistency_rules:
+                properties:
+                  character_style:
+                    type: string
+                required:
+                - character_style
+                type: object
+            required:
+            - total_panels
+            - panel_overviews
+            type: object
+        structured_output_enabled: true
+        title: LLM
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 90
+      id: '1746700545903'
+      position:
+        x: 370.7572851944793
+        y: 270.29416380600645
+      positionAbsolute:
+        x: 370.7572851944793
+        y: 270.29416380600645
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        outputs:
+        - value_selector:
+          - '1747134201151'
+          - output
+          variable: text
+        selected: false
+        title: 終了
+        type: end
+      height: 90
+      id: '1746701222868'
+      position:
+        x: 2283.967114994708
+        y: 295.1417343060362
+      positionAbsolute:
+        x: 2283.967114994708
+        y: 295.1417343060362
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        error_handle_mode: terminated
+        height: 178
+        is_parallel: true
+        iterator_selector:
+        - '1746708458829'
+        - iteration_input_list
+        output_selector:
+        - '1746707871960'
+        - text
+        output_type: array[string]
+        parallel_nums: 10
+        selected: false
+        start_node_id: 1746707845164start
+        title: イテレーション 2
+        type: iteration
+        width: 388
+      height: 178
+      id: '1746707845164'
+      position:
+        x: 983.8521809021856
+        y: 264.41393682793336
+      positionAbsolute:
+        x: 983.8521809021856
+        y: 264.41393682793336
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 388
+      zIndex: 1
+    - data:
+        desc: ''
+        isInIteration: true
+        selected: false
+        title: ''
+        type: iteration-start
+      draggable: false
+      height: 48
+      id: 1746707845164start
+      parentId: '1746707845164'
+      position:
+        x: 24
+        y: 68
+      positionAbsolute:
+        x: 1007.8521809021856
+        y: 332.41393682793336
+      selectable: false
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-iteration-start
+      width: 44
+      zIndex: 1002
+    - data:
+        context:
+          enabled: true
+          variable_selector:
+          - '1746707845164'
+          - item
+        desc: ''
+        isInIteration: true
+        isInLoop: false
+        iteration_id: '1746707845164'
+        model:
+          completion_params: {}
+          mode: chat
+          name: gemini-2.5-pro-preview-05-06
+          provider: langgenius/gemini/google
+        prompt_template:
+        - id: d77c8fe9-e9f6-4ff3-8e9f-91d3ab701b16
+          role: system
+          text: "prompt_template:\n- id: d77c8fe9-e9f6-4ff3-8e9f-91d3ab701b16\n  role:\
+            \ system\n  text: |\n    あなたは教育漫画の【1コマ分】のシナリオライター兼イラストディレクターです。\n    以下の情報に基づいて、指定されたJSON形式で【この1コマ分だけ】の漫画パネル情報を生成してください。\n\
+            \n    現在の情報:\n    - ユーザーの質問: {{#1746700539145.user_question#}}\n    -\
+            \ ユーザーレベル: {{#1746700539145.user_level#}}\n    - このコマの番号: {{item.panel_number}}\n\
+            \    - 全体の進行状況: {{item.progress_percentage}}%\n    - 現在のストーリーフェーズ: {{item.story_phase}}\n\
+            \    - このコマで描くべき概要: {{item.panel_overview}}\n    - キャラクター詳細情報: {{item.main_characters_json_string}}\n\
+            \    - ビジュアル一貫性ルール: {{item.visual_consistency_rules}}\n    \n    {{#if\
+            \ item.previous_panels_json_string}}\n    直前のパネルの流れ:\n    {{item.previous_panels_json_string}}\n\
+            \    {{/if}}\n\n    // 出力JSONテンプレート:\n    {\n      \"panel_id\": {{item.panel_number}},\n\
+            \      \"scene_description\": \"（シーンの詳細な描写、キャラクターの配置、背景要素）\",\n      \"\
+            camera_angle\": \"（例: medium shot, close-up, wide angle, bird's eye view）\"\
+            ,\n      \"lighting\": \"（例: bright classroom lighting, soft afternoon\
+            \ sun）\",\n      \"characters\": [\n        {\n          \"name\": \"\
+            （キャラクター名）\",\n          // ★★★ main_charactersから全ての外見的特徴を正確にコピー ★★★\n\
+            \          \"species\": \"（必須）\",\n          \"hair_color\": \"（必須）\"\
+            , \n          \"hair_style\": \"（必須）\",\n          \"eye_color\": \"（必須）\"\
+            ,\n          \"face_shape\": \"（必須）\",\n          \"skin_tone\": \"（必須）\"\
+            ,\n          \"height\": \"（必須）\",\n          \"body_type\": \"（必須）\"\
+            ,\n          \"clothing\": \"（必須、シーンに応じて微調整可）\",\n          \"accessories\"\
+            : \"（必須）\",\n          \"distinctive_features\": \"（必須、顔の特徴を詳細に）\",\n\
+            \          // このコマ特有の情報\n          \"pose\": \"（具体的なポーズ、例: sitting at\
+            \ desk writing notes）\",\n          \"expression\": \"（具体的な表情、例: concentrated\
+            \ frown while thinking）\",\n          \"action\": \"（現在の行動）\",\n     \
+            \     \"position_in_frame\": \"（フレーム内の位置、例: left side, center）\"\n   \
+            \     }\n      ],\n      \"background_elements\": [\n        {\n     \
+            \     \"element\": \"（背景要素名）\",\n          \"description\": \"（詳細な説明）\"\
+            ,\n          \"position\": \"（配置）\"\n        }\n      ],\n      \"speech_bubbles\"\
+            : [\n        {\n          \"character\": \"（話者名）\",\n          \"text\"\
+            : \"（5-15文字の短いセリフ）\",\n          \"emotion\": \"（感情、例: curious, excited,\
+            \ confused）\",\n          \"bubble_style\": \"（例: normal, thought, shout）\"\
+            ,\n          \"position\": \"（吹き出しの位置）\"\n        }\n      ],\n      \"\
+            educational_elements\": [\n        {\n          \"type\": \"（例: diagram,\
+            \ text_box, arrow）\",\n          \"content\": \"（教育的内容）\",\n         \
+            \ \"position\": \"（配置）\"\n        }\n      ],\n      \"panel_transitions\"\
+            : {\n        \"from_previous\": \"（前のコマからの繋がり方）\",\n        \"to_next\"\
+            : \"（次のコマへの伏線）\"\n      }\n    }\n\n    重要な指示:\n    - キャラクターの外見は main_characters\
+            \ の定義を完全に維持し、一貫性を保つ\n    - セリフは極めて短く、自然な会話になるように\n    - 前のパネルからの流れを意識し、ストーリーの連続性を保つ\n\
+            \    - 教育的内容は視覚的要素と短いセリフで効果的に伝える\n    - ユーザーレベルに適した表現を使用"
+        - id: 951bf6ce-f278-421e-bcbe-b14a4895cf94
+          role: user
+          text: '{{#1746700539145.user_question#}}
+
+            {{#1746700539145.user_level#}}
+
+            {{#1746708458829.overall_style_output#}}
+
+            {{#1746707845164.index#}}
+
+            {{#1746707845164.item#}}
+
+            {{#1746700545903.text#}}'
+        selected: false
+        title: LLM 2
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 90
+      id: '1746707871960'
+      parentId: '1746707845164'
+      position:
+        x: 126.86339869177027
+        y: 65.31423751592655
+      positionAbsolute:
+        x: 1110.715579593956
+        y: 329.7281743438599
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+      zIndex: 1002
+    - data:
+        code: "import json\nimport re\n\ndef main(planning_json_string: str, user_question_input:\
+          \ str = None, user_level_input: str = None) -> dict:\n    \"\"\"\n    Parameters\n\
+          \    ----------\n    planning_json_string      : str  計画フェーズ LLM の JSON\
+          \ 文字列\n    user_question_input       : str  開始ノードから渡す質問文（任意）\n    user_level_input\
+          \          : str  開始ノードから渡す学年 / 難易度（任意）\n    \"\"\"\n    \n    # ヘルパー関数をmain内で定義\n\
+          \    def determine_story_phase(panel_num: int, total_panels: int, story_arc:\
+          \ dict) -> str:\n        \"\"\"パネル番号から物語のフェーズを判定\"\"\"\n        progress\
+          \ = panel_num / total_panels\n        \n        if progress <= 0.1:\n  \
+          \          return \"introduction\"\n        elif progress <= 0.8:\n    \
+          \        return \"development\"\n        elif progress <= 0.9:\n       \
+          \     return \"climax\"\n        else:\n            return \"resolution\"\
+          \n    \n    # ------ 1) 入力の取得 ------\n    if not planning_json_string:\n\
+          \        return {\n            \"error\": \"planning_json_string が渡されていません。\"\
+          ,\n            \"iteration_input_list\": [],\n            \"overall_style_output\"\
+          : \"default comic style\"\n        }\n\n    # ------ マークダウンコードブロックの除去処理\
+          \ ------\n    match = re.search(r\"```(?:json)?\\s*([\\s\\S]*?)\\s*```\"\
+          , planning_json_string)\n    if match:\n        cleaned_json_str = match.group(1).strip()\n\
+          \    else:\n        cleaned_json_str = planning_json_string.strip()\n  \
+          \  \n    # ------ 2) JSON 解析 ------\n    try:\n        plan_data = json.loads(cleaned_json_str)\n\
+          \    except json.JSONDecodeError as e:\n        return {\n            \"\
+          error\": f\"Planning JSON のパースに失敗: {e}\",\n            \"cleaned_input_attempt\"\
+          : cleaned_json_str,\n            \"raw_input\": planning_json_string,\n\
+          \            \"iteration_input_list\": [],\n            \"overall_style_output\"\
+          : \"default comic style\"\n        }\n\n    # データの取得\n    total_panels =\
+          \ plan_data.get(\"total_panels\", 0)\n    panel_overviews = plan_data.get(\"\
+          panel_overviews\", [])\n    main_characters_info = plan_data.get(\"main_characters\"\
+          , [])\n    visual_consistency_rules = plan_data.get(\"visual_consistency_rules\"\
+          , {})\n    story_arc = plan_data.get(\"story_arc\", {})\n    \n    # overall_style\
+          \ を取得または生成\n    if \"overall_style_suggestion\" in plan_data:\n        overall_style\
+          \ = plan_data.get(\"overall_style_suggestion\", \"default comic style\"\
+          )\n    elif isinstance(visual_consistency_rules, dict):\n        art_style\
+          \ = visual_consistency_rules.get('art_style', 'manga style')\n        color_palette\
+          \ = visual_consistency_rules.get('color_palette', 'bright colors')\n   \
+          \     overall_style = f\"{art_style}, {color_palette}\"\n    else:\n   \
+          \     overall_style = \"clear manga style, bright educational colors\"\n\
+          \n    # ------ 3) 妥当性チェック ------\n    if not isinstance(total_panels, int)\
+          \ or total_panels <= 0:\n        return {\n            \"error\": f\"'total_panels'={total_panels}\
+          \ は 1 以上の整数である必要があります。\",\n            \"iteration_input_list\": [],\n \
+          \           \"overall_style_output\": overall_style\n        }\n\n    if\
+          \ len(panel_overviews) != total_panels:\n        return {\n            \"\
+          error\": f\"総パネル数 {total_panels} と panel_overviews の長さ {len(panel_overviews)}\
+          \ が一致しません。\",\n            \"iteration_input_list\": [],\n            \"\
+          overall_style_output\": overall_style\n        }\n\n    # ------ 4) 変換処理\
+          \ ------\n    iteration_items = []\n    \n    # キャラクター情報をJSON文字列に変換\n  \
+          \  if main_characters_info is None or not isinstance(main_characters_info,\
+          \ list):\n        characters_json = json.dumps([], ensure_ascii=False)\n\
+          \    else:\n        characters_json = json.dumps(main_characters_info, ensure_ascii=False)\n\
+          \    \n    # 前のパネルの情報を保持する変数\n    previous_panels_json = []\n    \n    for\
+          \ idx in range(total_panels):\n        # 現在のパネルの情報\n        current_panel_info\
+          \ = {\n            \"panel_number\": idx + 1,\n            \"panel_overview\"\
+          : panel_overviews[idx] if idx < len(panel_overviews) else \"No overview\
+          \ available\",\n            \"main_characters_json_string\": characters_json,\n\
+          \            \"overall_style\": overall_style,\n            \"user_question\"\
+          : user_question_input if user_question_input else \"\",\n            \"\
+          user_level\": user_level_input if user_level_input else \"\",\n        \
+          \    \"visual_consistency_rules\": json.dumps(visual_consistency_rules,\
+          \ ensure_ascii=False) if visual_consistency_rules else \"{}\",\n       \
+          \     \"story_arc\": json.dumps(story_arc, ensure_ascii=False) if story_arc\
+          \ else \"{}\",\n            \"previous_panel_json_string\": json.dumps(previous_panels_json[-3:],\
+          \ ensure_ascii=False) if previous_panels_json else \"\",\n            \"\
+          progress_percentage\": round((idx + 1) / total_panels * 100, 1),\n     \
+          \       \"story_phase\": determine_story_phase(idx + 1, total_panels, story_arc)\n\
+          \        }\n        \n        iteration_items.append(current_panel_info)\n\
+          \        \n        # このパネルの概要を履歴に追加\n        previous_panels_json.append({\n\
+          \            \"panel_id\": idx + 1,\n            \"overview\": panel_overviews[idx]\
+          \ if idx < len(panel_overviews) else \"\"\n        })\n\n    # ------ 5)\
+          \ 出力 ------\n    return {\n        \"iteration_input_list\": iteration_items,\n\
+          \        \"overall_style_output\": overall_style\n    }"
+        code_language: python3
+        desc: ''
+        outputs:
+          iteration_input_list:
+            children: null
+            type: array[object]
+          overall_style_output:
+            children: null
+            type: string
+        selected: false
+        title: 計画JSONパース用
+        type: code
+        variables:
+        - value_selector:
+          - '1746700545903'
+          - text
+          variable: planning_json_string
+        - value_selector:
+          - '1746700539145'
+          - user_question
+          variable: user_question_input
+        - value_selector:
+          - '1746700539145'
+          - user_level
+          variable: user_level_input
+      height: 54
+      id: '1746708458829'
+      position:
+        x: 676.0320656468683
+        y: 270.29416380600645
+      positionAbsolute:
+        x: 676.0320656468683
+        y: 270.29416380600645
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: "import json\nimport re\n\ndef main(panel_jsons_input) -> dict:\n  \
+          \  \"\"\"\n    Parameters\n    ----------\n    panel_jsons_input : イテレーションノードからのパネルJSON文字列のリスト\n\
+          \    \"\"\"\n    \n    # ヘルパー関数をmain内で定義\n    def construct_image_prompt_from_panel_dict(panel_data:\
+          \ dict, overall_style: str) -> str:\n        \"\"\"\n        1パネル分の辞書データから、画像生成用のプロンプト文字列を組み立てる。\n\
+          \        \"\"\"\n        if not isinstance(panel_data, dict):\n        \
+          \    return \"Error: Invalid panel_data, expected a dictionary.\"\n\n  \
+          \      parts = []\n        \n        # パネル番号を含める\n        panel_id = panel_data.get(\"\
+          panel_id\", \"unknown\")\n        parts.append(f\"Educational manga panel\
+          \ {panel_id}\")\n        \n        # シーン説明\n        scene_desc = panel_data.get(\"\
+          scene_description\", panel_data.get(\"description\", \"\"))\n        if\
+          \ scene_desc:\n            parts.append(f\"Scene: {scene_desc}\")\n    \
+          \    \n        # カメラアングルと照明\n        camera = panel_data.get(\"camera_angle\"\
+          , \"medium shot\")\n        lighting = panel_data.get(\"lighting\", \"bright\
+          \ clear lighting\")\n        parts.append(f\"Camera: {camera}, Lighting:\
+          \ {lighting}\")\n        \n        # キャラクター情報\n        character_prompts\
+          \ = []\n        for char_info in panel_data.get(\"characters\", []):\n \
+          \           if not isinstance(char_info, dict):\n                continue\n\
+          \            \n            char_parts = []\n            name = char_info.get(\"\
+          name\", \"character\")\n            \n            # 基本情報の構築\n          \
+          \  char_parts.append(f\"Character '{name}'\")\n            \n          \
+          \  # 外見情報\n            if char_info.get('species'):\n                char_parts.append(f\"\
+          appearance: {char_info.get('species')}\")\n            if char_info.get('hair_style')\
+          \ and char_info.get('hair_color'):\n                char_parts.append(f\"\
+          with {char_info.get('hair_style')} in {char_info.get('hair_color')}\")\n\
+          \            if char_info.get('eye_color'):\n                char_parts.append(f\"\
+          {char_info.get('eye_color')} eyes\")\n            if char_info.get('clothing'):\n\
+          \                char_parts.append(f\"wearing {char_info.get('clothing')}\"\
+          )\n            if char_info.get('accessories'):\n                char_parts.append(f\"\
+          with {char_info.get('accessories')}\")\n            \n            # 特徴的な要素\n\
+          \            features = char_info.get('features', char_info.get('distinctive_features'))\n\
+          \            if features:\n                char_parts.append(f\"distinctive\
+          \ features: {features}\")\n            \n            # ポーズと表情\n        \
+          \    if char_info.get('pose'):\n                char_parts.append(f\"pose:\
+          \ {char_info.get('pose')}\")\n            if char_info.get('expression'):\n\
+          \                char_parts.append(f\"expression: {char_info.get('expression')}\"\
+          )\n            \n            character_prompts.append(\", \".join(filter(None,\
+          \ char_parts)))\n        \n        if character_prompts:\n            parts.append(\"\
+          Characters: \" + \"; \".join(character_prompts))\n        \n        # 背景\n\
+          \        backgrounds = panel_data.get(\"background\", [])\n        if backgrounds\
+          \ and isinstance(backgrounds, list):\n            valid_backgrounds = [str(bg)\
+          \ for bg in backgrounds if bg]\n            if valid_backgrounds:\n    \
+          \            parts.append(f\"Background: {', '.join(valid_backgrounds)}\"\
+          )\n        \n        # ビジュアルエフェクト\n        visual_effects = panel_data.get(\"\
+          visual_effects\", [])\n        if visual_effects and isinstance(visual_effects,\
+          \ list):\n            valid_effects = [str(ve) for ve in visual_effects\
+          \ if ve]\n            if valid_effects:\n                parts.append(\"\
+          Visual effects: \" + \", \".join(valid_effects))\n        \n        # 効果音\n\
+          \        sfx_list = panel_data.get(\"sfx\", [])\n        if sfx_list and\
+          \ isinstance(sfx_list, list):\n            sfx_texts = []\n            for\
+          \ sfx in sfx_list:\n                if isinstance(sfx, dict) and sfx.get(\"\
+          text\"):\n                    sfx_texts.append(sfx.get(\"text\"))\n    \
+          \            elif isinstance(sfx, str):\n                    sfx_texts.append(sfx)\n\
+          \            if sfx_texts:\n                parts.append(f\"Sound effects:\
+          \ {', '.join(sfx_texts)}\")\n        \n        # プロンプトの組み立て\n        final_prompt\
+          \ = \". \".join(filter(None, parts))\n        \n        # スタイル追加\n     \
+          \   style_to_use = overall_style if overall_style else \"anime comic style,\
+          \ clear lines, vibrant colors\"\n        final_prompt += f\". Style: {style_to_use}.\
+          \ Aspect ratio 2:3. Consistent character design across all panels.\"\n \
+          \       \n        return final_prompt.strip()\n    \n    # メイン処理開始\n   \
+          \ panel_json_strings_list = []\n    \n    # 入力の処理\n    if isinstance(panel_jsons_input,\
+          \ dict) and \"output\" in panel_jsons_input:\n        panel_json_strings_list\
+          \ = panel_jsons_input.get(\"output\", [])\n    elif isinstance(panel_jsons_input,\
+          \ list):\n        panel_json_strings_list = panel_jsons_input\n    else:\n\
+          \        return {\n            \"error\": \"Input 'panel_jsons_input' is\
+          \ missing or not in expected format.\",\n            \"image_generation_prompts_list\"\
+          : [],\n            \"debug_parsed_panels\": []\n        }\n    \n    # プロンプト生成\n\
+          \    image_prompts = []\n    parsed_panel_data_for_debug = []\n    \n  \
+          \  for index, panel_json_str_raw in enumerate(panel_json_strings_list):\n\
+          \        if not isinstance(panel_json_str_raw, str):\n            error_detail\
+          \ = f\"Item at index {index} is not a string\"\n            image_prompts.append(f\"\
+          Error: {error_detail}\")\n            parsed_panel_data_for_debug.append({\"\
+          error\": error_detail})\n            continue\n        \n        # マークダウンの除去\n\
+          \        match = re.search(r\"```(?:json)?\\s*([\\s\\S]*?)\\s*```\", panel_json_str_raw)\n\
+          \        if match:\n            cleaned_json_str = match.group(1).strip()\n\
+          \        else:\n            cleaned_json_str = panel_json_str_raw.strip()\n\
+          \        \n        try:\n            panel_data = json.loads(cleaned_json_str)\n\
+          \            if not isinstance(panel_data, dict):\n                raise\
+          \ ValueError(\"Parsed data is not a dictionary\")\n            \n      \
+          \      parsed_panel_data_for_debug.append(panel_data)\n            \n  \
+          \          # overall_styleの取得\n            overall_style = panel_data.get(\"\
+          overall_style\", \"manga style, bright colors\")\n            \n       \
+          \     # プロンプト生成\n            img_prompt = construct_image_prompt_from_panel_dict(panel_data,\
+          \ overall_style)\n            image_prompts.append(img_prompt)\n       \
+          \     \n        except Exception as e:\n            error_detail = f\"Error\
+          \ at index {index}: {str(e)}\"\n            image_prompts.append(error_detail)\n\
+          \            parsed_panel_data_for_debug.append({\"error\": error_detail})\n\
+          \    \n    return {\n        \"image_generation_prompts_list\": image_prompts,\n\
+          \        \"debug_parsed_panels\": parsed_panel_data_for_debug\n    }"
+        code_language: python3
+        desc: ''
+        outputs:
+          debug_parsed_panels:
+            children: null
+            type: array[object]
+          image_generation_prompts_list:
+            children: null
+            type: array[string]
+        selected: false
+        title: 画像プロンプト組み立て
+        type: code
+        variables:
+        - value_selector:
+          - '1746707845164'
+          - output
+          variable: panel_jsons_input
+      height: 54
+      id: '1746788803036'
+      position:
+        x: 1410.9084354875936
+        y: 295.1417343060362
+      positionAbsolute:
+        x: 1410.9084354875936
+        y: 295.1417343060362
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        desc: ''
+        error_handle_mode: terminated
+        height: 334
+        is_parallel: true
+        iterator_selector:
+        - '1746788803036'
+        - image_generation_prompts_list
+        output_selector:
+        - '1747134234498'
+        - files
+        output_type: array[file]
+        parallel_nums: 10
+        selected: false
+        start_node_id: 1747134201151start
+        title: イテレーション 2
+        type: iteration
+        width: 388
+      height: 334
+      id: '1747134201151'
+      position:
+        x: 1734.7759841064933
+        y: 280.21763115836654
+      positionAbsolute:
+        x: 1734.7759841064933
+        y: 280.21763115836654
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 388
+      zIndex: 1
+    - data:
+        desc: ''
+        isInIteration: true
+        selected: false
+        title: ''
+        type: iteration-start
+      draggable: false
+      height: 48
+      id: 1747134201151start
+      parentId: '1747134201151'
+      position:
+        x: 24
+        y: 68
+      positionAbsolute:
+        x: 1758.7759841064933
+        y: 348.21763115836654
+      selectable: false
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom-iteration-start
+      width: 44
+      zIndex: 1002
+    - data:
+        desc: ''
+        isInIteration: true
+        isInLoop: false
+        is_team_authorization: true
+        iteration_id: '1747134201151'
+        output_schema: null
+        paramSchemas:
+        - auto_generate: null
+          default: null
+          form: llm
+          human_description:
+            en_US: Detailed description of the image you want to generate (max 32000
+              chars). Check the official OpenAI documentation for GPT Image.
+            ja_JP: Detailed description of the image you want to generate (max 32000
+              chars). Check the official OpenAI documentation for GPT Image.
+            pt_BR: Descrição detalhada da imagem que você deseja gerar (máx 32000
+              chars). Verifique a documentação oficial da OpenAI para GPT Image.
+            zh_Hans: 您想要生成的图像的详细描述（最多 32000 字符）。请查看 GPT Image 的 OpenAI 官方文档。
+          label:
+            en_US: Prompt
+            ja_JP: Prompt
+            pt_BR: Prompt
+            zh_Hans: 提示词
+          llm_description: Detailed image prompt for GPT Image (max 32000 characters).
+            Describe the desired image clearly.
+          max: null
+          min: null
+          name: prompt
+          options: []
+          placeholder: null
+          precision: null
+          required: true
+          scope: null
+          template: null
+          type: string
+        - auto_generate: null
+          default: auto
+          form: form
+          human_description:
+            en_US: Select the image size
+            ja_JP: Select the image size
+            pt_BR: Selecione o tamanho da imagem
+            zh_Hans: 选择图像大小
+          label:
+            en_US: Image size
+            ja_JP: Image size
+            pt_BR: Tamanho da imagem
+            zh_Hans: 图像大小
+          llm_description: ''
+          max: null
+          min: null
+          name: size
+          options:
+          - label:
+              en_US: Auto
+              ja_JP: Auto
+              pt_BR: Automático
+              zh_Hans: 自动
+            value: auto
+          - label:
+              en_US: Square (1024x1024)
+              ja_JP: Square (1024x1024)
+              pt_BR: Quadrado (1024x1024)
+              zh_Hans: 方形 (1024x1024)
+            value: 1024x1024
+          - label:
+              en_US: Portrait (1024x1536)
+              ja_JP: Portrait (1024x1536)
+              pt_BR: Retrato (1024x1536)
+              zh_Hans: 竖屏/肖像 (1024x1536)
+            value: 1024x1536
+          - label:
+              en_US: Landscape (1536x1024)
+              ja_JP: Landscape (1536x1024)
+              pt_BR: Paisagem (1536x1024)
+              zh_Hans: 横屏/风景 (1536x1024)
+            value: 1536x1024
+          placeholder: null
+          precision: null
+          required: false
+          scope: null
+          template: null
+          type: select
+        - auto_generate: null
+          default: 1
+          form: form
+          human_description:
+            en_US: Number of images to generate (Must be less than 10).
+            ja_JP: Number of images to generate (Must be less than 10).
+            pt_BR: Número de imagens a gerar (Deve ser menor que 10).
+            zh_Hans: 要生成的图像数量（必须小于 10）。
+          label:
+            en_US: Number of images
+            ja_JP: Number of images
+            pt_BR: Número de imagens
+            zh_Hans: 图像数量
+          llm_description: ''
+          max: 10
+          min: 1
+          name: n
+          options: []
+          placeholder: null
+          precision: null
+          required: false
+          scope: null
+          template: null
+          type: number
+        - auto_generate: null
+          default: auto
+          form: form
+          human_description:
+            en_US: Select the image quality
+            ja_JP: Select the image quality
+            pt_BR: Selecione a qualidade da imagem
+            zh_Hans: 选择图像质量
+          label:
+            en_US: Image quality
+            ja_JP: Image quality
+            pt_BR: Qualidade da imagem
+            zh_Hans: 图像质量
+          llm_description: ''
+          max: null
+          min: null
+          name: quality
+          options:
+          - label:
+              en_US: Auto
+              ja_JP: Auto
+              pt_BR: Automático
+              zh_Hans: 自动
+            value: auto
+          - label:
+              en_US: Low
+              ja_JP: Low
+              pt_BR: Baixa
+              zh_Hans: 低
+            value: low
+          - label:
+              en_US: Medium
+              ja_JP: Medium
+              pt_BR: Média
+              zh_Hans: 中
+            value: medium
+          - label:
+              en_US: High
+              ja_JP: High
+              pt_BR: Alta
+              zh_Hans: 高
+            value: high
+          placeholder: null
+          precision: null
+          required: false
+          scope: null
+          template: null
+          type: select
+        - auto_generate: null
+          default: auto
+          form: form
+          human_description:
+            en_US: Select the image background type. Transparent requires PNG or WebP
+              format and works best with medium/high quality.
+            ja_JP: Select the image background type. Transparent requires PNG or WebP
+              format and works best with medium/high quality.
+            pt_BR: Selecione o tipo de fundo da imagem. Fundo transparente requer
+              formato PNG ou WebP e funciona melhor com qualidade média/alta.
+            zh_Hans: 选择图像背景类型。透明背景需要 PNG 或 WebP 格式，并且最适用于中/高质量。
+          label:
+            en_US: Background
+            ja_JP: Background
+            pt_BR: Fundo
+            zh_Hans: 背景
+          llm_description: ''
+          max: null
+          min: null
+          name: background
+          options:
+          - label:
+              en_US: Auto
+              ja_JP: Auto
+              pt_BR: Automático
+              zh_Hans: 自动
+            value: auto
+          - label:
+              en_US: Opaque
+              ja_JP: Opaque
+              pt_BR: Opaco
+              zh_Hans: 不透明
+            value: opaque
+          - label:
+              en_US: Transparent
+              ja_JP: Transparent
+              pt_BR: Transparente
+              zh_Hans: 透明
+            value: transparent
+          placeholder: null
+          precision: null
+          required: false
+          scope: null
+          template: null
+          type: select
+        - auto_generate: null
+          default: auto
+          form: form
+          human_description:
+            en_US: Select the output image format.
+            ja_JP: Select the output image format.
+            pt_BR: Selecione o formato da imagem de saída.
+            zh_Hans: 选择输出图像格式。
+          label:
+            en_US: Output Format
+            ja_JP: Output Format
+            pt_BR: Formato de Saída
+            zh_Hans: 输出格式
+          llm_description: ''
+          max: null
+          min: null
+          name: output_format
+          options:
+          - label:
+              en_US: Auto
+              ja_JP: Auto
+              pt_BR: Automático
+              zh_Hans: 自动
+            value: auto
+          - label:
+              en_US: PNG
+              ja_JP: PNG
+              pt_BR: PNG
+              zh_Hans: PNG
+            value: png
+          - label:
+              en_US: JPEG
+              ja_JP: JPEG
+              pt_BR: JPEG
+              zh_Hans: JPEG
+            value: jpeg
+          - label:
+              en_US: WebP
+              ja_JP: WebP
+              pt_BR: WebP
+              zh_Hans: WebP
+            value: webp
+          placeholder: null
+          precision: null
+          required: false
+          scope: null
+          template: null
+          type: select
+        - auto_generate: null
+          default: 100
+          form: form
+          human_description:
+            en_US: Set compression level (0-100) for JPEG/WebP formats.
+            ja_JP: Set compression level (0-100) for JPEG/WebP formats.
+            pt_BR: Defina o nível de compressão (0-100) para formatos JPEG/WebP.
+            zh_Hans: 设置 JPEG/WebP 格式的压缩级别（0-100）。
+          label:
+            en_US: Output Compression
+            ja_JP: Output Compression
+            pt_BR: Compressão de Saída
+            zh_Hans: 输出压缩
+          llm_description: ''
+          max: 100
+          min: 0
+          name: output_compression
+          options: []
+          placeholder: null
+          precision: null
+          required: false
+          scope: null
+          template: null
+          type: number
+        - auto_generate: null
+          default: auto
+          form: form
+          human_description:
+            en_US: Control content moderation level.
+            ja_JP: Control content moderation level.
+            pt_BR: Controle o nível de moderação de conteúdo.
+            zh_Hans: 控制内容审核级别。
+          label:
+            en_US: Moderation
+            ja_JP: Moderation
+            pt_BR: Moderação
+            zh_Hans: 内容审核
+          llm_description: ''
+          max: null
+          min: null
+          name: moderation
+          options:
+          - label:
+              en_US: Auto
+              ja_JP: Auto
+              pt_BR: Automático
+              zh_Hans: 自动
+            value: auto
+          - label:
+              en_US: Low
+              ja_JP: Low
+              pt_BR: Baixo
+              zh_Hans: 低
+            value: low
+          placeholder: null
+          precision: null
+          required: false
+          scope: null
+          template: null
+          type: select
+        params:
+          background: ''
+          moderation: ''
+          n: ''
+          output_compression: ''
+          output_format: ''
+          prompt: ''
+          quality: ''
+          size: ''
+        provider_id: langgenius/openai_tool/openai
+        provider_name: langgenius/openai_tool/openai
+        provider_type: builtin
+        selected: false
+        title: GPT Image Generate
+        tool_configurations:
+          background: auto
+          moderation: auto
+          n: 1
+          output_compression: 100
+          output_format: auto
+          quality: auto
+          size: 1024x1536
+        tool_description: GPT Image Generate (gpt-image-1) is a text to image generation
+          tool
+        tool_label: GPT Image Generate
+        tool_name: gpt_image_generate
+        tool_parameters:
+          prompt:
+            type: mixed
+            value: '{{#1747134201151.item#}}'
+        type: tool
+      height: 246
+      id: '1747134234498'
+      parentId: '1747134201151'
+      position:
+        x: 126.28972386542591
+        y: 68
+      positionAbsolute:
+        x: 1861.0657079719192
+        y: 348.21763115836654
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+      zIndex: 1002
+    viewport:
+      x: -149.95877676932264
+      y: 84.81371239710143
+      zoom: 0.4967556237728489
