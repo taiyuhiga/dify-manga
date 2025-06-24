@@ -101,10 +101,11 @@ export async function GET(
         console.log('🖼️ Extracted image URLs:', imageUrls);
 
         if (imageUrls.length === 0) {
-          console.error('❌ No image URLs found after filtering.');
+          console.error('❌ No image URLs found after filtering. Dify might have returned an empty result.');
+          // Difyからの結果が空であることを示すカスタムステータスを返す
           return NextResponse.json({ 
-            status: status, 
-            message: "漫画は生成されましたが、画像が見つかりませんでした。URLの抽出に失敗しました。"
+            status: 'succeeded_but_empty', 
+            message: "漫画は生成されましたが、Difyから画像が返されませんでした。Difyのワークフローを確認してください。"
           });
         }
       } catch (e) {

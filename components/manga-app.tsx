@@ -446,6 +446,11 @@ export function MangaApp() {
           return
         }
         
+        if (data.status === 'succeeded_but_empty') {
+          console.error('❌ Workflow succeeded but returned no images.', data.message);
+          throw new Error(data.message || '漫画は生成されましたが、画像URLが空でした。');
+        }
+
         if (data.status === 'failed') {
           throw new Error('ワークフローが失敗しました')
         }
@@ -673,7 +678,14 @@ export function MangaApp() {
                               onError={(e) => {
                                 console.error('画像読み込みエラー:', panel.image_url)
                                 const target = e.target as HTMLImageElement
-                                target.style.display = 'none'
+                                
+                                // プレースホルダー画像が失敗した場合はSVGプレースホルダーを表示
+                                if (panel.image_url === '/placeholder-manga.png') {
+                                  target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iI2YwZjBmMCIvPgogIDx0ZXh0IHg9IjIwMCIgeT0iMzAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTYiIGZpbGw9IiM2NjYiPgogICAgY29tYSDjgrPjg57jgZXjgpzjgZfjgabkuIvjgZXjgYQKICA8L3RleHQ+Cjwvc3ZnPg=='
+                                } else {
+                                  // その他の画像の場合はプレースホルダー画像にフォールバック
+                                  target.src = '/placeholder-manga.png'
+                                }
                               }}
                             />
                             <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">

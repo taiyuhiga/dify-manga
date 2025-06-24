@@ -12,8 +12,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // セキュリティチェック: Difyドメインからの画像のみ許可
-    if (!imageUrl.startsWith('https://upload.dify.ai/')) {
+    // セキュリティチェック: Difyドメインとプレースホルダー画像を許可
+    const allowedDomains = [
+      'https://upload.dify.ai/',
+      'https://via.placeholder.com/'
+    ];
+    
+    const isAllowed = allowedDomains.some(domain => imageUrl.startsWith(domain));
+    
+    if (!isAllowed) {
       console.warn('不正な画像URL:', imageUrl);
       return NextResponse.json(
         { error: '許可されていない画像URLです' }, 
@@ -44,6 +51,31 @@ export async function GET(request: NextRequest) {
         statusText: response.statusText,
         url: imageUrl
       });
+      
+      // 403エラーの場合はプレースホルダー画像を返す
+      if (response.status === 403) {
+        console.log('403エラーのため、プレースホルダー画像を返します');
+        
+        // 1x1の透明なPNG画像を生成
+        const placeholderSvg = `<svg width="400" height="600" xmlns="http://www.w3.org/2000/svg">
+          <rect width="400" height="600" fill="#f0f0f0"/>
+          <text x="200" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#666">
+            画像を読み込めませんでした
+          </text>
+        </svg>`;
+        
+        const placeholderBuffer = Buffer.from(placeholderSvg, 'utf-8');
+        
+        const headers = new Headers();
+        headers.set('Content-Type', 'image/svg+xml');
+        headers.set('Cache-Control', 'public, max-age=60'); // 短時間キャッシュ
+        headers.set('Access-Control-Allow-Origin', '*');
+        
+        return new NextResponse(placeholderBuffer, {
+          status: 200,
+          headers,
+        });
+      }
       
       return NextResponse.json(
         { error: `画像の取得に失敗しました: ${response.status}` }, 
