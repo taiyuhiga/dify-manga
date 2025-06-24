@@ -18,7 +18,7 @@ export function MangaApp() {
   const [error, setError] = useState<string | null>(null)
   const [showSuccess, setShowSuccess] = useState(false)
   const [streak, setStreak] = useState(0)
-  const [showIntro, setShowIntro] = useState(true)
+  const [, setShowIntro] = useState(true)
   const [currentStep, setCurrentStep] = useState<"intro" | "form" | "generating" | "result">("intro")
   const [currentTab, setCurrentTab] = useState<"generate" | "library">("generate")
   const [selectedManga, setSelectedManga] = useState<MangaLibraryType | null>(null)
@@ -26,6 +26,22 @@ export function MangaApp() {
   // Difyワークフロー関連の状態
   const [workflowRunId, setWorkflowRunId] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
+  
+  // ストリーミング生成関連の状態
+  const [isStreamingMode, setIsStreamingMode] = useState(true) // ストリーミングモードの有効/無効
+  const [streamingPanels, setStreamingPanels] = useState<Array<{
+    panel_id: number;
+    image_url: string;
+    title: string;
+    description: string;
+  }>>([])
+  const [streamingProgress, setStreamingProgress] = useState<{
+    current_panel: number;
+    total_panels: number;
+    percentage: number;
+    message: string;
+  } | null>(null)
+  const [, setStreamingComplete] = useState(false)
   
   // 状態永続化のためのキー
   const STORAGE_KEY = 'dify-manga-app-state'
@@ -205,7 +221,154 @@ export function MangaApp() {
     }
   }, [])
 
-  // Difyワークフロー処理
+  // ストリーミング生成処理
+  const handleStreamingSubmit = async (question: string, level: string) => {
+    setUserQuestion(question)
+    setUserLevel(level)
+    setError(null)
+    setImageUrls([])
+    setStreamingPanels([])
+    setShowSuccess(false)
+    setCurrentStep("generating")
+    setIsGenerating(true)
+    setStreamingComplete(false)
+    setStreamingProgress(null)
+
+    try {
+      console.log('🎯 Starting streaming manga generation...')
+      
+      // SSEを使用してストリーミング生成を開始
+      const response = await fetch("/api/streaming-manga-generation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_question: question,
+          user_level: level,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      }
+
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+
+      if (!reader) {
+        throw new Error('Response body is not readable')
+      }
+
+      while (true) {
+        const { done, value } = await reader.read()
+        
+        if (done) {
+          console.log('✅ Streaming completed')
+          break
+        }
+
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split('\n')
+
+        for (const line of lines) {
+          if (line.startsWith('event: ') && lines[lines.indexOf(line) + 1]?.startsWith('data: ')) {
+            const eventType = line.substring(7)
+            const dataLine = lines[lines.indexOf(line) + 1]
+            const data = JSON.parse(dataLine.substring(6))
+
+            console.log('📨 SSE Event:', eventType, data)
+
+            switch (eventType) {
+              case 'start':
+                setStreamingProgress({
+                  current_panel: 0,
+                  total_panels: 0,
+                  percentage: 0,
+                  message: data.message
+                })
+                break
+
+              case 'planning':
+                setStreamingProgress(() => ({
+                  current_panel: 0,
+                  total_panels: 0,
+                  percentage: 0,
+                  message: data.message
+                }))
+                break
+
+              case 'plan_complete':
+                setStreamingProgress(() => ({
+                  current_panel: 0,
+                  total_panels: data.total_panels,
+                  percentage: 0,
+                  message: `${data.total_panels}コマの漫画を生成開始...`
+                }))
+                break
+
+              case 'panel_generating':
+                setStreamingProgress(prev => ({
+                  current_panel: data.panel_id,
+                  total_panels: prev?.total_panels || data.total_panels || 0,
+                  percentage: data.progress,
+                  message: data.message
+                }))
+                break
+
+              case 'panel_complete':
+                setStreamingPanels(prev => [...prev, data])
+                setStreamingProgress(prev => ({
+                  current_panel: data.panel_id,
+                  total_panels: prev?.total_panels || 0,
+                  percentage: Math.round((data.panel_id / (prev?.total_panels || 1)) * 100),
+                  message: `コマ ${data.panel_id} が完成しました`
+                }))
+                break
+
+              case 'complete':
+                console.log('🎉 All panels completed!')
+                setStreamingComplete(true)
+                setIsGenerating(false)
+                setCurrentStep("result")
+                setShowSuccess(true)
+                
+                // 最終的な画像URLリストを設定（既存のコンポーネントとの互換性のため）
+                const finalImageUrls = data.panels.map((panel: { image_url: string }) => panel.image_url)
+                setImageUrls(finalImageUrls)
+                break
+
+              case 'error':
+                throw new Error(data.error)
+
+              case 'panel_error':
+                console.warn('⚠️ Panel generation error:', data)
+                // エラーがあっても続行
+                break
+            }
+          }
+        }
+      }
+
+    } catch (err) {
+      console.error('❌ Streaming generation error:', err)
+      
+      let errorMessage = "ストリーミング生成に失敗しました";
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage)
+      setIsGenerating(false)
+      setCurrentStep("form")
+      
+      // フォールバック: 従来の方法で生成を試行
+      console.log('🔄 Falling back to traditional generation...')
+      handleSubmit(question, level)
+    }
+  }
+
+  // 従来のDifyワークフロー処理（フォールバック用）
   const handleSubmit = async (question: string, level: string) => {
     setUserQuestion(question)
     setUserLevel(level)
@@ -412,7 +575,33 @@ export function MangaApp() {
             {currentTab === "generate" ? (
               <>
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">質問を入力してください</h2>
-                <MangaForm onSubmit={handleSubmit} isLoading={isGenerating} />
+                
+                {/* ストリーミングモード切り替え */}
+                <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="streaming-mode"
+                      checked={isStreamingMode}
+                      onChange={(e) => setIsStreamingMode(e.target.checked)}
+                      className="w-4 h-4 text-blue-600"
+                    />
+                    <label htmlFor="streaming-mode" className="text-sm font-medium text-gray-700">
+                      🚀 リアルタイム生成モード（推奨）
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {isStreamingMode 
+                      ? "コマが完成次第、順次表示されます" 
+                      : "従来の方式で全コマ完成後に一括表示されます"
+                    }
+                  </p>
+                </div>
+
+                <MangaForm 
+                  onSubmit={isStreamingMode ? handleStreamingSubmit : handleSubmit} 
+                  isLoading={isGenerating} 
+                />
                 {error && <ErrorMessage message={error} />}
               </>
             ) : (
@@ -425,21 +614,101 @@ export function MangaApp() {
         )}
 
         {currentStep === "generating" && (
-          <div className="flex-1 p-4 flex flex-col items-center justify-center text-center">
-            <div className="w-32 h-32 mb-6">
-              <MascotCharacter type="thinking" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">AIがマンガを生成中...</h2>
-            <p className="text-gray-600 mb-6">
-              あなたの質問「{userQuestion}」について、<br />
-              {userLevel}レベルに合わせたマンガを作成しています
-            </p>
-            <div className="w-full max-w-md bg-gray-200 rounded-full h-2 mb-4">
-              <div className="bg-[#00bcd4] h-2 rounded-full animate-pulse" style={{width: '50%'}}></div>
-            </div>
-            <p className="text-sm text-gray-500">完成まで2-5分程度お待ちください</p>
-            {workflowRunId && (
-              <p className="text-xs text-gray-400 mt-2">ID: {workflowRunId}</p>
+          <div className="flex-1 p-4">
+            {/* ストリーミングモードの場合 */}
+            {isStreamingMode ? (
+              <div className="space-y-6">
+                {/* 進行状況ヘッダー */}
+                <div className="text-center">
+                  <div className="w-32 h-32 mb-6 mx-auto">
+                    <MascotCharacter type="thinking" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4">AIがマンガを生成中...</h2>
+                  <p className="text-gray-600">
+                    「{userQuestion}」について、{userLevel}レベルに合わせたマンガを作成中
+                  </p>
+                </div>
+
+                {/* 詳細進行状況 */}
+                {streamingProgress && (
+                  <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-gray-700">
+                        {streamingProgress.message}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {streamingProgress.current_panel > 0 && streamingProgress.total_panels > 0
+                          ? `${streamingProgress.current_panel}/${streamingProgress.total_panels}`
+                          : ''
+                        }
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3 mb-2">
+                      <div 
+                        className="bg-[#00bcd4] h-3 rounded-full transition-all duration-500"
+                        style={{width: `${streamingProgress.percentage}%`}}
+                      ></div>
+                    </div>
+                    <div className="text-xs text-gray-500 text-center">
+                      {streamingProgress.percentage}% 完了
+                    </div>
+                  </div>
+                )}
+
+                {/* 完成したコマをリアルタイム表示 */}
+                {streamingPanels.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-bold text-gray-800">
+                      完成したコマ ({streamingPanels.length} / {streamingProgress?.total_panels || '?'})
+                    </h3>
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200">
+                      <div className="flex flex-col">
+                        {streamingPanels.map((panel, index) => (
+                          <div key={panel.panel_id} className="relative">
+                            <img
+                              src={panel.image_url}
+                              alt={`コマ ${panel.panel_id}: ${panel.title}`}
+                              className="w-full h-auto object-contain block"
+                              style={{ display: 'block' }}
+                              onError={(e) => {
+                                console.error('画像読み込みエラー:', panel.image_url)
+                                const target = e.target as HTMLImageElement
+                                target.style.display = 'none'
+                              }}
+                            />
+                            <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs">
+                              {panel.panel_id}
+                            </div>
+                            {/* 新着表示アニメーション */}
+                            {index === streamingPanels.length - 1 && (
+                              <div className="absolute inset-0 border-4 border-green-400 rounded animate-pulse pointer-events-none"></div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* 従来のモード */
+              <div className="flex-1 flex flex-col items-center justify-center text-center">
+                <div className="w-32 h-32 mb-6">
+                  <MascotCharacter type="thinking" />
+                </div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-4">AIがマンガを生成中...</h2>
+                <p className="text-gray-600 mb-6">
+                  あなたの質問「{userQuestion}」について、<br />
+                  {userLevel}レベルに合わせたマンガを作成しています
+                </p>
+                <div className="w-full max-w-md bg-gray-200 rounded-full h-2 mb-4">
+                  <div className="bg-[#00bcd4] h-2 rounded-full animate-pulse" style={{width: '50%'}}></div>
+                </div>
+                <p className="text-sm text-gray-500">完成まで2-5分程度お待ちください</p>
+                {workflowRunId && (
+                  <p className="text-xs text-gray-400 mt-2">ID: {workflowRunId}</p>
+                )}
+              </div>
             )}
           </div>
         )}
