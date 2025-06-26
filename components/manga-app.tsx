@@ -22,6 +22,8 @@ export function MangaApp() {
   const [currentStep, setCurrentStep] = useState<"intro" | "form" | "generating" | "result">("intro")
   const [currentTab, setCurrentTab] = useState<"generate" | "library">("generate")
   const [selectedManga, setSelectedManga] = useState<MangaLibraryType | null>(null)
+  const [isClient, setIsClient] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
   
   // Difyワークフロー関連の状態
   const [workflowRunId, setWorkflowRunId] = useState<string | null>(null)
@@ -48,7 +50,7 @@ export function MangaApp() {
   
   // 状態をlocalStorageに保存
   const saveState = () => {
-    if (typeof window === 'undefined') return
+    if (!isClient) return
     
     const stateToSave = {
       userQuestion,
@@ -64,7 +66,13 @@ export function MangaApp() {
     
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave))
-      console.log('💾 状態を保存しました:', stateToSave.currentStep)
+      console.log('💾 状態を保存しました:', {
+        currentStep: stateToSave.currentStep,
+        currentTab: stateToSave.currentTab,
+        hasQuestion: !!stateToSave.userQuestion,
+        hasImages: stateToSave.imageUrls.length > 0,
+        isGenerating: stateToSave.isGenerating
+      })
     } catch (error) {
       console.error('❌ 状態保存エラー:', error)
     }
@@ -72,11 +80,14 @@ export function MangaApp() {
   
   // localStorageから状態を復元
   const loadState = () => {
-    if (typeof window === 'undefined') return null
+    if (!isClient) return null
     
     try {
       const savedState = localStorage.getItem(STORAGE_KEY)
-      if (!savedState) return null
+      if (!savedState) {
+        console.log('📂 保存された状態が見つかりませんでした')
+        return null
+      }
       
       const parsed = JSON.parse(savedState)
       
@@ -87,16 +98,31 @@ export function MangaApp() {
         return null
       }
       
-      console.log('📂 状態を復元しました:', parsed.currentStep)
+      console.log('📂 状態を復元しました:', {
+        currentStep: parsed.currentStep,
+        currentTab: parsed.currentTab,
+        hasQuestion: !!parsed.userQuestion,
+        hasImages: parsed.imageUrls?.length > 0,
+        isGenerating: parsed.isGenerating,
+        timestamp: new Date(parsed.timestamp).toLocaleString()
+      })
       return parsed
     } catch (error) {
       console.error('❌ 状態復元エラー:', error)
+      localStorage.removeItem(STORAGE_KEY) // 破損したデータを削除
       return null
     }
   }
 
+  // クライアントサイドでのマウントを検出
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   // コンポーネントマウント時に状態を復元または初期化
   useEffect(() => {
+    if (!isClient) return
+
     console.log('🔄 MangaApp: コンポーネントマウント - 状態復元を試行')
     
     const savedState = loadState()
@@ -141,38 +167,19 @@ export function MangaApp() {
       setCurrentTab("generate")
     }
     
+    setIsInitialized(true)
     console.log('✅ MangaApp: 初期化完了')
-  }, [])
+  }, [isClient])
 
   // 認証状態の変更を監視
   useEffect(() => {
+    if (!isClient) return
+
     const supabase = createClient()
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('🔐 MangaApp: 認証状態変更 -', event, session?.user?.email)
       
-      // 新規ログイン時のみイントロにリセット（既存セッションの継続は除く）
-      if (event === 'SIGNED_IN' && session?.user) {
-        console.log('🚀 MangaApp: ログイン成功検出')
-        
-        // 保存された状態があるかチェック
-        const savedState = loadState()
-        
-        if (!savedState) {
-          // 保存された状態がない場合のみイントロにリセット
-          console.log('📝 新規ログイン - イントロ画面に移行')
-          setCurrentStep("intro")
-          setShowIntro(true)
-          setIsGenerating(false)
-          setError(null)
-          setWorkflowRunId(null)
-          setSelectedManga(null)
-        } else {
-          console.log('📂 既存セッション継続 - 状態を保持')
-          // 既存の状態を保持（何もしない）
-        }
-      }
-      
-      // ログアウト時は状態をクリア
+      // ログアウト時のみ状態をクリア
       if (event === 'SIGNED_OUT') {
         console.log('👋 ログアウト - 状態をクリア')
         localStorage.removeItem(STORAGE_KEY)
@@ -186,22 +193,28 @@ export function MangaApp() {
         setShowSuccess(false)
         setUserQuestion("")
         setUserLevel("")
+        setCurrentTab("generate")
+        setIsInitialized(false) // 初期化フラグもリセット
       }
+      
+      // サインインイベントでは何もしない（状態復元は初期化時に実行）
     })
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [isClient])
   
   // 状態が変更されたときに自動保存
   useEffect(() => {
     // 初期化完了後のみ保存（無限ループを防ぐ）
-    if (currentStep !== "intro" || userQuestion || workflowRunId) {
+    if (isClient && isInitialized) {
       saveState()
     }
-  }, [currentStep, userQuestion, userLevel, imageUrls, showSuccess, currentTab, workflowRunId, isGenerating])
+  }, [isClient, isInitialized, currentStep, userQuestion, userLevel, imageUrls, showSuccess, currentTab, workflowRunId, isGenerating])
   
   // ページ離脱時とvisibility変更時に状態を保存
   useEffect(() => {
+    if (!isClient) return
+
     const handleBeforeUnload = () => {
       saveState()
     }
@@ -219,7 +232,7 @@ export function MangaApp() {
       window.removeEventListener('beforeunload', handleBeforeUnload)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [])
+  }, [isClient])
 
   // ストリーミング生成処理
   const handleStreamingSubmit = async (question: string, level: string) => {
@@ -493,7 +506,11 @@ export function MangaApp() {
     setUserLevel("")
     
     // 保存された状態もクリア
-    localStorage.removeItem(STORAGE_KEY)
+    if (isClient) {
+      localStorage.removeItem(STORAGE_KEY)
+    }
+    
+    // 初期化フラグは保持（resetは状態をクリアするだけで、再初期化ではない）
   }
 
   const handleMangaSelect = (manga: MangaLibraryType) => {
@@ -516,6 +533,18 @@ export function MangaApp() {
     if (currentStep === "generating") return 50
     if (currentStep === "result") return 100
     return 0
+  }
+
+  // SSRとクライアントのハイドレーション不一致を防ぐため、クライアントマウント完了まで待機
+  if (!isClient) {
+    return (
+      <main className="flex-1 flex flex-col items-center justify-center">
+        <div className="w-32 h-32 mb-6">
+          <MascotCharacter type="thinking" />
+        </div>
+        <p className="text-gray-600">読み込み中...</p>
+      </main>
+    )
   }
 
   return (

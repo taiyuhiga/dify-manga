@@ -163,6 +163,106 @@ export async function getMangaById(id: string): Promise<MangaLibrary | null> {
   }
 }
 
+// 漫画を削除する関数
+export async function deleteMangaFromLibrary(id: string): Promise<boolean> {
+  try {
+    console.log('🗑️ 漫画を削除中:', id);
+    
+    const { error } = await supabase
+      .from('manga_library')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('❌ 漫画削除エラー:', error);
+      return false;
+    }
+    
+    console.log('✅ 漫画削除成功:', id);
+    return true;
+    
+  } catch (error) {
+    console.error('❌ 漫画削除エラー:', error);
+    return false;
+  }
+}
+
+// 漫画情報を更新する関数
+export async function updateMangaInLibrary(
+  id: string, 
+  updates: Partial<Pick<MangaLibrary, 'title' | 'question' | 'level'>>
+): Promise<MangaLibrary | null> {
+  try {
+    console.log('📝 漫画を更新中:', id, updates);
+    
+    const { data, error } = await supabase
+      .from('manga_library')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('❌ 漫画更新エラー:', error);
+      return null;
+    }
+    
+    console.log('✅ 漫画更新成功:', data.id);
+    return data;
+    
+  } catch (error) {
+    console.error('❌ 漫画更新エラー:', error);
+    return null;
+  }
+}
+
+// 漫画を検索・フィルターする関数
+export async function searchMangaLibrary(searchParams: {
+  query?: string;
+  level?: string;
+  sortBy?: 'created_at' | 'title';
+  sortOrder?: 'asc' | 'desc';
+}): Promise<MangaLibrary[]> {
+  try {
+    console.log('🔍 漫画を検索中:', searchParams);
+    
+    let queryBuilder = supabase
+      .from('manga_library')
+      .select('*');
+    
+    // テキスト検索（タイトルまたは質問）
+    if (searchParams.query) {
+      queryBuilder = queryBuilder.or(
+        `title.ilike.%${searchParams.query}%,question.ilike.%${searchParams.query}%`
+      );
+    }
+    
+    // レベルフィルター
+    if (searchParams.level) {
+      queryBuilder = queryBuilder.eq('level', searchParams.level);
+    }
+    
+    // ソート
+    const sortBy = searchParams.sortBy || 'created_at';
+    const sortOrder = searchParams.sortOrder || 'desc';
+    queryBuilder = queryBuilder.order(sortBy, { ascending: sortOrder === 'asc' });
+    
+    const { data, error } = await queryBuilder;
+    
+    if (error) {
+      console.error('❌ 漫画検索エラー:', error);
+      return [];
+    }
+    
+    console.log('✅ 漫画検索成功:', data.length, '件');
+    return data || [];
+    
+  } catch (error) {
+    console.error('❌ 漫画検索エラー:', error);
+    return [];
+  }
+}
+
 // === シンプルなDifyワークフロー関連の関数 ===
 
 // Difyワークフロー状態を記録

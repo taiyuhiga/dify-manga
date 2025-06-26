@@ -23,30 +23,38 @@ CREATE POLICY "Allow all to read manga_library" ON public.manga_library
 CREATE POLICY "Allow all to insert manga_library" ON public.manga_library
     FOR INSERT WITH CHECK (true);
 
--- 5. インデックスの作成
+-- 5. 全ユーザーに更新権限を付与するポリシー
+CREATE POLICY "Allow all to update manga_library" ON public.manga_library
+    FOR UPDATE USING (true);
+
+-- 6. 全ユーザーに削除権限を付与するポリシー
+CREATE POLICY "Allow all to delete manga_library" ON public.manga_library
+    FOR DELETE USING (true);
+
+-- 7. インデックスの作成
 CREATE INDEX IF NOT EXISTS idx_manga_library_created_at ON public.manga_library(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_manga_library_workflow_run_id ON public.manga_library(workflow_run_id);
 
--- 6. Storage bucket の作成 (こちらはUI経由で作成する必要があります)
+-- 8. Storage bucket の作成 (こちらはUI経由で作成する必要があります)
 -- ストレージで以下を作成してください:
 -- - Bucket名: 'manga-images'
 -- - Public: true
 -- - File size limit: 5MB
 -- - Allowed MIME types: image/png, image/jpeg, image/webp
 
--- 7. Storage bucket のポリシー設定例 (必要に応じて調整)
+-- 9. Storage bucket のポリシー設定例 (必要に応じて調整)
 -- INSERT POLICY: 
 -- CREATE POLICY "Allow uploads" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'manga-images');
 
 -- SELECT POLICY:
 -- CREATE POLICY "Allow public downloads" ON storage.objects FOR SELECT USING (bucket_id = 'manga-images');
 
--- 8. サンプルデータの挿入 (オプション)
+-- 10. サンプルデータの挿入 (オプション)
 -- INSERT INTO public.manga_library (title, question, level, image_urls, workflow_run_id) VALUES
 --   ('光合成の仕組み', '光合成の仕組みを教えて', '小学6年生', '{}', 'sample-workflow-id-1'),
 --   ('恐竜の生態', '恐竜について教えて', '小学3年生', '{}', 'sample-workflow-id-2');
 
--- 9. 新しいストリーミング用テーブル群
+-- 11. 新しいストリーミング用テーブル群
 
 -- manga_generation_sessions テーブル: 生成セッションの管理
 CREATE TABLE IF NOT EXISTS public.manga_generation_sessions (
@@ -89,7 +97,7 @@ CREATE TABLE IF NOT EXISTS public.character_profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 10. 新しいインデックス
+-- 12. 新しいインデックス
 CREATE INDEX IF NOT EXISTS idx_manga_generation_sessions_status ON public.manga_generation_sessions(session_status);
 CREATE INDEX IF NOT EXISTS idx_manga_generation_sessions_created_at ON public.manga_generation_sessions(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_manga_panels_session_id ON public.manga_panels(session_id);
@@ -97,7 +105,7 @@ CREATE INDEX IF NOT EXISTS idx_manga_panels_status ON public.manga_panels(panel_
 CREATE INDEX IF NOT EXISTS idx_manga_panels_session_panel ON public.manga_panels(session_id, panel_number);
 CREATE INDEX IF NOT EXISTS idx_character_profiles_name ON public.character_profiles(character_name);
 
--- 11. RLS ポリシー設定
+-- 13. RLS ポリシー設定
 ALTER TABLE public.manga_generation_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.manga_panels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.character_profiles ENABLE ROW LEVEL SECURITY;
@@ -138,7 +146,7 @@ CREATE POLICY "Allow all to insert character_profiles" ON public.character_profi
 CREATE POLICY "Allow all to update character_profiles" ON public.character_profiles
     FOR UPDATE USING (true);
 
--- 12. updated_at 自動更新のためのトリガー関数
+-- 14. updated_at 自動更新のためのトリガー関数
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN

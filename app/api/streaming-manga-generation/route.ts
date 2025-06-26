@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { saveMangaToLibrary } from '@/lib/supabase';
 
 // SSE用のヘルパー関数
 function createSSEMessage(type: string, data: unknown): string {
@@ -79,6 +80,28 @@ export async function POST(request: NextRequest) {
               generatedPanels.push(panelData);
 
               sendSSE('panel_complete', panelData);
+            }
+
+            // 漫画をライブラリーに保存（モックモード）
+            try {
+              console.log('💾 モック生成完了 - ライブラリーに保存中...');
+              
+              const mangaData = {
+                title: user_question.slice(0, 50), // 質問の最初の50文字をタイトルに
+                question: user_question,
+                level: user_level,
+                image_urls: generatedPanels.map(panel => panel.image_url),
+                workflow_run_id: `mock_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+              };
+
+              const libraryId = await saveMangaToLibrary(mangaData);
+              if (libraryId) {
+                console.log('✅ モック漫画ライブラリー保存完了:', libraryId);
+              } else {
+                console.error('❌ モック漫画ライブラリーへの保存に失敗しました。');
+              }
+            } catch (error) {
+              console.error('❌ モック漫画ライブラリー保存中にエラー:', error);
             }
 
             sendSSE('complete', { 
@@ -268,6 +291,28 @@ export async function POST(request: NextRequest) {
                   error: `コマ ${i + 1} の生成に失敗しました` 
                 });
               }
+            }
+
+            // 漫画をライブラリーに保存（実際のDifyモード）
+            try {
+              console.log('💾 Dify生成完了 - ライブラリーに保存中...');
+              
+              const mangaData = {
+                title: user_question.slice(0, 50), // 質問の最初の50文字をタイトルに
+                question: user_question,
+                level: user_level,
+                image_urls: generatedPanels.map(panel => panel.image_url),
+                workflow_run_id: `dify_streaming_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+              };
+
+              const libraryId = await saveMangaToLibrary(mangaData);
+              if (libraryId) {
+                console.log('✅ Dify漫画ライブラリー保存完了:', libraryId);
+              } else {
+                console.error('❌ Dify漫画ライブラリーへの保存に失敗しました。');
+              }
+            } catch (error) {
+              console.error('❌ Dify漫画ライブラリー保存中にエラー:', error);
             }
 
             sendSSE('complete', { 

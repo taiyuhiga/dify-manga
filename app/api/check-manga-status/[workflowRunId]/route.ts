@@ -117,37 +117,48 @@ export async function GET(
         });
       }
 
-      // Supabase Storageに画像をアップロード（並列処理）
+      // 画像をSupabase Storageにアップロード（並列処理）
+      console.log('🔄 画像をSupabase Storageに保存開始...');
       const uploadPromises = imageUrls.map(async (url, index) => {
         const filename = `${workflowRunId}_${index + 1}.png`;
         try {
           const storageUrl = await uploadImageToStorage(url, filename);
-          return storageUrl || url; // アップロード失敗時は元のURLを使用
+          // アップロード失敗時は元のDify URLを使用
+          return storageUrl || url; 
         } catch (error) {
-          console.error(`❌ 画像アップロードエラー:`, error);
-          console.log(`⚠️ Storage保存失敗、元のURLを使用: ${url}`);
-          return url; // エラー時は元のURLを使用
+          console.error(`❌ 画像アップロードエラー (${filename}):`, error);
+          console.log(`⚠️ Storage保存失敗、元のURLをフォールバックとして使用: ${url}`);
+          // エラーが発生した場合も元のDify URLを返す
+          return url;
         }
       });
 
       const processedImageUrls = await Promise.all(uploadPromises);
+      console.log('✅ Supabase Storageへのアップロード処理完了:', processedImageUrls);
 
-      // 漫画をライブラリーに保存
+      // 漫画をライブラリーに保存する
       try {
-        const title = extractQuestionFromOutput(outputs) || '無題の漫画';
+        // `result.inputs` はDifyからのレスポンスに含まれる入力情報
+        const inputs = typeof result.inputs === 'string' ? JSON.parse(result.inputs) : result.inputs;
+        const question = inputs?.user_question || '質問不明';
+        const level = inputs?.user_level || 'レベル不明';
         
-        await saveMangaToLibrary({
-          title: title,
-          question: title,
-          level: '未設定',
+        const mangaData = {
+          title: question.slice(0, 50), // 質問の最初の50文字をタイトルに
+          question: question,
+          level: level,
           image_urls: processedImageUrls,
           workflow_run_id: workflowRunId
-        });
-        
-        console.log('✅ 漫画ライブラリーに保存完了');
+        };
+
+        const libraryId = await saveMangaToLibrary(mangaData);
+        if (libraryId) {
+          console.log('✅ 漫画ライブラリー保存完了:', libraryId);
+        } else {
+          console.error('❌ 漫画ライブラリーへの保存に失敗しました。');
+        }
       } catch (error) {
-        console.error('❌ 漫画ライブラリー保存エラー:', error);
-        // ライブラリー保存に失敗しても画像は返す
+        console.error('❌ 漫画ライブラリー保存中に予期せぬエラー:', error);
       }
 
       return NextResponse.json({ 

@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GoogleSignInButton } from "@/components/google-sign-in-button";
+import { MascotCharacter } from "@/components/mascot-character";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -50,11 +51,16 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>
-            Enter your email below to login to your account
+      <Card className="border-[#00bcd4]/20 shadow-lg">
+        <CardHeader className="text-center pb-2">
+          <div className="flex justify-center mb-4">
+            <div className="w-20 h-20">
+              <MascotCharacter type="happy" />
+            </div>
+          </div>
+          <CardTitle className="text-3xl font-bold text-[#00bcd4]">AIマンガでログイン</CardTitle>
+          <CardDescription className="text-lg text-gray-600">
+            マンガで学習を始めましょう！
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -82,10 +88,11 @@ export function LoginForm({
                   <Input
                     id="email"
                     type="email"
-                    placeholder="m@example.com"
+                    placeholder="manga@example.com"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    className="border-gray-300 focus:border-[#00bcd4] focus:ring-[#00bcd4] rounded-lg"
                   />
                 </div>
                 <div className="grid gap-2">
@@ -93,9 +100,9 @@ export function LoginForm({
                     <Label htmlFor="password">Password</Label>
                     <Link
                       href="/auth/forgot-password"
-                      className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+                      className="ml-auto inline-block text-sm text-[#00bcd4] underline-offset-4 hover:underline font-medium"
                     >
-                      Forgot your password?
+                      パスワードを忘れた方
                     </Link>
                   </div>
                   <Input
@@ -104,11 +111,23 @@ export function LoginForm({
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    className="border-gray-300 focus:border-[#00bcd4] focus:ring-[#00bcd4] rounded-lg"
                   />
                 </div>
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "ログイン中..." : "メールでログイン"}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <p className="text-sm text-red-600 flex items-center gap-2">
+                      <span>⚠️</span>
+                      {error}
+                    </p>
+                  </div>
+                )}
+                <Button 
+                  type="submit" 
+                  className="w-full bg-[#00bcd4] hover:bg-[#00acc1] text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-[0.98]" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? "ログイン中..." : "📚 メールでログイン"}
                 </Button>
               </div>
             </form>
@@ -117,9 +136,9 @@ export function LoginForm({
               アカウントをお持ちでない方は{" "}
               <Link
                 href="/auth/sign-up"
-                className="underline underline-offset-4"
+                className="text-[#00bcd4] font-bold underline underline-offset-4 hover:text-[#00acc1] transition-colors"
               >
-                新規登録
+                🎯 新規登録
               </Link>
             </div>
           </div>
